@@ -114,6 +114,74 @@ local function LoadHub()
     local ScriptTab = Window:CreateTab("Scripts", 4483362458)
     ScriptTab:CreateButton({Name = "Invisible FE", Callback = function() loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))() end})
     ScriptTab:CreateButton({Name = "Fling People FE", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/AlfredFEscripts/Fling-All-script./main/Fling%20people.lua"))() end})
+    ScriptTab:CreateButton({
+
+Name = "Quizbot",
+
+Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Damian-11/quizbot/master/quizbot.luau"))() end
+
+})
+
+
+
+ScriptTab:CreateButton({
+
+Name = "Infinite Yield",
+
+Callback = function() loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))() end
+
+})
+
+
+
+ScriptTab:CreateButton({
+
+Name = "Scriptblox Searcher",
+
+Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/chillz-workshop/main/ScriptSearcher"))() end
+
+})
+
+
+
+ScriptTab:CreateButton({
+
+Name = "Delta Keyboard",
+
+Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Xxtan31/Ata/main/deltakeyboardcrack.txt", true))() end
+
+})
+
+
+
+ScriptTab:CreateButton({
+
+Name = "Dances FE (Requires Keyboard)",
+
+Callback = function() loadstring(game:HttpGet("https://rawscripts.net/raw/UP-Just-a-baseplate.-KDV3-Modded-177753"))() end
+
+})
+
+
+
+ScriptTab:CreateButton({
+
+Name = "Sky Hub",
+
+Callback = function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Sky-Hub-18710"))() end
+
+})
+
+
+
+ScriptTab:CreateButton({
+
+Name = "Fearless Chat Bypass",
+
+Callback = function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fearless-Chat-Bypass-101789"))() end
+
+})
+
 end
 
 -- Execution Start Chat
