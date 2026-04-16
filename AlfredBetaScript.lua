@@ -1,18 +1,14 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
-local TextChatService = game:GetService("TextChatService")
 
--- DATABASE CONFIG
-local GoogleSheetURL = "https://script.google.com/macros/s/AKfycbzDJ2Q2BvwYSqs3UIqyW1PlXBJfGdPnHBbMaXKMLIooXCvfGEoi8lVIfHmT9JFIc26M/exec"
+-- CONFIGURATION
+local GoogleSheetURL = "https://script.google.com/macros/s/AKfycbwa46fHd9XtvluXYa9Ryk42VQqxSxJIIeYzcfrMcF5Zmmy-wDjrZaDqzVnvH7ux0ltZ4g/exec"
 local OwnerUser = "Dadrails912"
 local PermKey = "AIfredFESCRlPTS"
 local SaveFile = "AlfredAuth.json"
 
--- BLACKLIST (Add usernames here: {"User1", "User2"})
-local BlacklistedUsers = {}
-
--- KEYS LIST
+-- KEYS LIST (30 Keys)
 local ValidFreeKeys = {
     ["Alfredfreekey24hr"] = true,
     ["Alfredfreekey24hr-1432"] = true, ["Alfredfreekey24hr-8854"] = true, ["Alfredfreekey24hr-2109"] = true,
@@ -29,12 +25,6 @@ local ValidFreeKeys = {
 
 local LocalPlayer = Players.LocalPlayer
 
--- Blacklist Check
-local isBlacklisted = false
-for _, name in pairs(BlacklistedUsers) do
-    if LocalPlayer.Name == name then isBlacklisted = true break end
-end
-
 -- Logging Function
 local function LogToSheet(key)
     local url = GoogleSheetURL .. "?username=" .. LocalPlayer.Name .. "&nickname=" .. LocalPlayer.DisplayName .. "&key=" .. key
@@ -48,21 +38,19 @@ if isfile(SaveFile) then
     if success then MyData = data end
 end
 
--- OWNER CHECK
-if LocalPlayer.Name == OwnerUser then 
-    MyData.Rank = "Owner" 
+if LocalPlayer.Name == OwnerUser then MyData.Rank = "Owner" end
+
+local function Save() 
+    writefile(SaveFile, HttpService:JSONEncode(MyData)) 
 end
 
-local function Save() writefile(SaveFile, HttpService:JSONEncode(MyData)) end
-
--- Main Hub
+-- Load Hub Function
 local function LoadHub()
-    if isBlacklisted then LocalPlayer:Kick("Blacklisted.") return end
-
     local Window = Rayfield:CreateWindow({
         Name = "Alfred Simple Accessories Hub",
         LoadingTitle = "Rank: " .. MyData.Rank,
-        LoadingSubtitle = "by Dadrails912"
+        LoadingSubtitle = "by Dadrails912",
+        ConfigurationSaving = {Enabled = false}
     })
 
     local HomeTab = Window:CreateTab("Home", 4483362458)
@@ -80,54 +68,75 @@ local function LoadHub()
     ScriptTab:CreateButton({Name = "Fearless Chat Bypass", Callback = function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fearless-Chat-Bypass-101789"))() end})
 end
 
--- Key System Startup
+-- Key System
 local function StartKeySystem()
-    if isBlacklisted then LocalPlayer:Kick("Blacklisted.") return end
-
-    -- Check if Owner or Perm
+    -- Skip if already authenticated
     if MyData.Rank == "Owner" then
         LogToSheet("OWNER_LOGIN")
-        LoadHub() 
-        return
+        LoadHub() return
     elseif MyData.Rank == "Permanent" then
         LogToSheet("PERM_SAVED_LOGIN")
-        LoadHub()
-        return
+        LoadHub() return
     elseif MyData.Rank == "Free" and os.time() < MyData.ExpireTime then
         LogToSheet("FREE_SAVED_LOGIN")
-        LoadHub() 
-        return
+        LoadHub() return
     end
 
-    -- If no saved access, show Key GUI
     local keyGui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
-    local keyFrame = Instance.new("Frame", keyGui)
-    keyFrame.Size, keyFrame.Position, keyFrame.BackgroundColor3 = UDim2.new(0, 300, 0, 200), UDim2.new(0.5, -150, 0.5, -100), Color3.fromRGB(30,30,30)
-    Instance.new("UICorner", keyFrame)
+    local main = Instance.new("Frame", keyGui)
+    main.Size = UDim2.new(0, 300, 0, 180)
+    main.Position = UDim2.new(0.5, -150, 0.5, -90)
+    main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    Instance.new("UICorner", main)
 
-    local input = Instance.new("TextBox", keyFrame)
-    input.Size, input.Position, input.PlaceholderText = UDim2.new(0.8, 0, 0.2, 0), UDim2.new(0.1, 0, 0.3, 0), "Enter Key..."
+    local title = Instance.new("TextLabel", main)
+    title.Size = UDim2.new(1, 0, 0.3, 0)
+    title.Text = "Alfred Hub | Key System"
+    title.TextColor3 = Color3.new(1,1,1)
+    title.BackgroundTransparency = 1
 
-    local enter = Instance.new("TextButton", keyFrame)
-    enter.Size, enter.Position, enter.Text, enter.BackgroundColor3 = UDim2.new(0.4, 0, 0.2, 0), UDim2.new(0.3, 0, 0.6, 0), "Enter", Color3.fromRGB(0, 150, 0)
+    local input = Instance.new("TextBox", main)
+    input.Size = UDim2.new(0.8, 0, 0.25, 0)
+    input.Position = UDim2.new(0.1, 0, 0.35, 0)
+    input.PlaceholderText = "Enter Key Here..."
+    input.Text = ""
+
+    local enter = Instance.new("TextButton", main)
+    enter.Size = UDim2.new(0.4, 0, 0.2, 0)
+    enter.Position = UDim2.new(0.3, 0, 0.7, 0)
+    enter.Text = "Check Key"
+    enter.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    enter.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", enter)
 
     enter.MouseButton1Click:Connect(function()
-        if input.Text == PermKey then
+        local typed = input.Text
+        
+        if typed == PermKey then
             MyData.Rank = "Permanent"
             Save()
-            LogToSheet("PERM_KEY_ACTIVATE")
+            LogToSheet("PERM_ACTIVATE")
             keyGui:Destroy()
             LoadHub()
-        elseif ValidFreeKeys[input.Text] then
-            MyData.Rank = "Free"
-            MyData.ExpireTime = os.time() + 86400
-            Save()
-            LogToSheet(input.Text)
-            keyGui:Destroy()
-            LoadHub()
+        elseif ValidFreeKeys[typed] then
+            -- CHECK GOOGLE SHEET IF USED
+            local checkURL = GoogleSheetURL .. "?action=checkKey&key=" .. typed
+            local status = game:HttpGet(checkURL)
+
+            if status == "USED" then
+                input.Text = ""
+                input.PlaceholderText = "Key already used!"
+            else
+                MyData.Rank = "Free"
+                MyData.ExpireTime = os.time() + 86400 -- 24 Hours
+                Save()
+                LogToSheet(typed)
+                keyGui:Destroy()
+                LoadHub()
+            end
         else
             input.Text = ""
-            input.PlaceholderText = "Invalid!"
+            input.PlaceholderText = "Invalid Key!"
         end
     end)
 end
