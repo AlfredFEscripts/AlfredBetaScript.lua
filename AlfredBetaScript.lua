@@ -3,14 +3,14 @@ local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local TextChatService = game:GetService("TextChatService")
 
--- CONFIGURATION & DATABASE
+-- DATABASE CONFIG
 local GoogleSheetURL = "https://script.google.com/macros/s/AKfycbzDJ2Q2BvwYSqs3UIqyW1PlXBJfGdPnHBbMaXKMLIooXCvfGEoi8lVIfHmT9JFIc26M/exec"
 local OwnerUser = "Dadrails912"
 local PermKey = "AIfredFESCRlPTS"
 local SaveFile = "AlfredAuth.json"
 
--- BLACKLIST (Add usernames here, separated by commas)
-local BlacklistedUsers = {"BadPlayer123", "ExploitLeaker88"}
+-- BLACKLIST (Add usernames here: {"User1", "User2"})
+local BlacklistedUsers = {}
 
 -- KEYS LIST
 local ValidFreeKeys = {
@@ -29,13 +29,10 @@ local ValidFreeKeys = {
 
 local LocalPlayer = Players.LocalPlayer
 
--- Blacklist Check Function
+-- Blacklist Check
 local isBlacklisted = false
 for _, name in pairs(BlacklistedUsers) do
-    if LocalPlayer.Name == name then
-        isBlacklisted = true
-        break
-    end
+    if LocalPlayer.Name == name then isBlacklisted = true break end
 end
 
 -- Logging Function
@@ -50,15 +47,17 @@ if isfile(SaveFile) then
     local success, data = pcall(function() return HttpService:JSONDecode(readfile(SaveFile)) end)
     if success then MyData = data end
 end
-if LocalPlayer.Name == OwnerUser then MyData.Rank = "Owner" end
+
+-- OWNER CHECK
+if LocalPlayer.Name == OwnerUser then 
+    MyData.Rank = "Owner" 
+end
+
 local function Save() writefile(SaveFile, HttpService:JSONEncode(MyData)) end
 
 -- Main Hub
 local function LoadHub()
-    if isBlacklisted then 
-        LocalPlayer:Kick("You are blacklisted from Alfred Hub.") 
-        return 
-    end
+    if isBlacklisted then LocalPlayer:Kick("Blacklisted.") return end
 
     local Window = Rayfield:CreateWindow({
         Name = "Alfred Simple Accessories Hub",
@@ -81,19 +80,26 @@ local function LoadHub()
     ScriptTab:CreateButton({Name = "Fearless Chat Bypass", Callback = function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fearless-Chat-Bypass-101789"))() end})
 end
 
--- Key System
+-- Key System Startup
 local function StartKeySystem()
-    if isBlacklisted then 
-        LocalPlayer:Kick("You are blacklisted from Alfred Hub.") 
-        return 
-    end
+    if isBlacklisted then LocalPlayer:Kick("Blacklisted.") return end
 
-    if MyData.Rank == "Owner" or MyData.Rank == "Permanent" then
-        LoadHub() return
+    -- Check if Owner or Perm
+    if MyData.Rank == "Owner" then
+        LogToSheet("OWNER_LOGIN")
+        LoadHub() 
+        return
+    elseif MyData.Rank == "Permanent" then
+        LogToSheet("PERM_SAVED_LOGIN")
+        LoadHub()
+        return
     elseif MyData.Rank == "Free" and os.time() < MyData.ExpireTime then
-        LoadHub() return
+        LogToSheet("FREE_SAVED_LOGIN")
+        LoadHub() 
+        return
     end
 
+    -- If no saved access, show Key GUI
     local keyGui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
     local keyFrame = Instance.new("Frame", keyGui)
     keyFrame.Size, keyFrame.Position, keyFrame.BackgroundColor3 = UDim2.new(0, 300, 0, 200), UDim2.new(0.5, -150, 0.5, -100), Color3.fromRGB(30,30,30)
@@ -109,7 +115,7 @@ local function StartKeySystem()
         if input.Text == PermKey then
             MyData.Rank = "Permanent"
             Save()
-            LogToSheet("PERM_KEY")
+            LogToSheet("PERM_KEY_ACTIVATE")
             keyGui:Destroy()
             LoadHub()
         elseif ValidFreeKeys[input.Text] then
