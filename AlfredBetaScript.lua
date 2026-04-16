@@ -3,7 +3,7 @@ local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 
 -- CONFIGURATION
-local GoogleSheetURL = "https://script.google.com/macros/s/AKfycbwa46fHd9XtvluXYa9Ryk42VQqxSxJIIeYzcfrMcF5Zmmy-wDjrZaDqzVnvH7ux0ltZ4g/exec"
+local GoogleSheetURL = "https://script.google.com/macros/s/AKfycbzjgwXNtHB50gbWWle93YS8iR2rlX2CHSuOPlCWOXMcEen2SM7GOfpFvBVGmILhBzNA6Q/exec"
 local OwnerUser = "Dadrails912"
 local PermKey = "AIfredFESCRlPTS"
 local SaveFile = "AlfredAuth.json"
