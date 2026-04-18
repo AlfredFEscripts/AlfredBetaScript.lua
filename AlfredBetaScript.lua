@@ -287,14 +287,10 @@ enter.MouseButton1Click:Connect(function()
             Save()
             keyGui:Destroy()
             LoadHub()
-        end
-    elseif response == "EXPIRED" then
-        input.Text = ""
-        input.PlaceholderText = "Grant has expired!"
-    else
+       else
         input.Text = ""
         input.PlaceholderText = "Invalid Key!"
-    end -- This closes the IF chain
-end) -- This closes the MouseButton1Click function
+    end
+end)
 
 StartKeySystem()
